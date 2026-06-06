@@ -2595,11 +2595,14 @@
     "version": "0.5.0+commit.1d4f565a.Emscripten.clang"
   },
   "networks": {
+    "1337": {
+      "address": "0xeeDe9cbBc0CB2196143716E417F916130b73B591"
+    },
     "5777": {
-      "events": {},
-      "links": {},
-      "address": "0x1D4A63FD4AeE6006227D9329bF43BE253aAb7460",
-      "transactionHash": "0x5449d48358ac7bc1df5c9411db05f935caed58a7c2a26246f103aee032fd48f1"
+      "address": "0xeeDe9cbBc0CB2196143716E417F916130b73B591"
+    },
+    "31337": {
+      "address": "0x343FbD9F345317374617C80c846D001D0815B434"
     },
     "11155111": {
       "address": "0x5680F81F6Bb95faBf476e8964A062Df2F5dD7c3B"

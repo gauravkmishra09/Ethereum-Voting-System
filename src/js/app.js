@@ -81,7 +81,7 @@ App = {
 
           var id = candidate[0];
           var name = candidate[1];
-          var voteCount = candidate[2];
+          var voteCount = candidate[3];
 
           // Get party info
           var partyInfo = App.parties[id] || { name: "Independent", badge: "bjp" };
