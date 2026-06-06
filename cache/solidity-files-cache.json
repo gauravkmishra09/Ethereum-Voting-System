@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/gauravmishra/Desktop/Decentralised-Platform-for-Voting-in-Elections-Using-Ethereum/contracts/Election.sol": {
+      "lastModificationDate": 1780765868683,
+      "contentHash": "3cfd2070b0c8f88bfe4b88d2437f3baa",
+      "sourceName": "contracts/Election.sol",
+      "solcConfig": {
+        "version": "0.5.16",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.20"
+      ],
+      "artifacts": [
+        "IndianElection"
+      ]
+    },
+    "/Users/gauravmishra/Desktop/Decentralised-Platform-for-Voting-in-Elections-Using-Ethereum/contracts/Migrations.sol": {
+      "lastModificationDate": 1780769868102,
+      "contentHash": "0bf511758aee05311b452c52ee303ddd",
+      "sourceName": "contracts/Migrations.sol",
+      "solcConfig": {
+        "version": "0.5.16",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.2"
+      ],
+      "artifacts": [
+        "Migrations"
+      ]
+    }
+  }
+}
