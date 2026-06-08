@@ -4,7 +4,6 @@ App = {
   account: '0x0',
   hasVoted: false,
 
-  // Party data mapped to candidate IDs
   parties: {
     1: { name: "Bharatiya Janata Party (BJP)", badge: "bjp" },
     2: { name: "Indian National Congress (INC)", badge: "inc" },
@@ -16,10 +15,34 @@ App = {
     return App.initWeb3();
   },
 
-  initWeb3: function() {
-    if (typeof web3 !== 'undefined') {
-      App.web3Provider = web3.currentProvider;
-      web3 = new Web3(web3.currentProvider);
+  initWeb3: async function() {
+    if (window.ethereum) {
+      App.web3Provider = window.ethereum;
+      web3 = new Web3(window.ethereum);
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xaa36a7' }]
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0xaa36a7',
+                chainName: 'Sepolia',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://sepolia.infura.io/v3/ad16fbeb600f47d18c5fa87c2dfd371f'],
+                blockExplorerUrls: ['https://sepolia.etherscan.io']
+              }]
+            });
+          }
+        }
+      } catch (error) {
+        console.error('User denied account access', error);
+      }
     } else {
       App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
       web3 = new Web3(App.web3Provider);
@@ -56,7 +79,6 @@ App = {
     loader.show();
     content.hide();
 
-    // Load account data
     web3.eth.getCoinbase(function(err, account) {
       if (err === null) {
         App.account = account;
@@ -64,7 +86,6 @@ App = {
       }
     });
 
-    // Load contract data
     App.contracts.Election.deployed().then(function(instance) {
       electionInstance = instance;
       return electionInstance.candidatesCount();
@@ -78,15 +99,12 @@ App = {
 
       for (var i = 1; i <= candidatesCount; i++) {
         electionInstance.candidates(i).then(function(candidate) {
-
           var id = candidate[0];
           var name = candidate[1];
           var voteCount = candidate[3];
 
-          // Get party info
           var partyInfo = App.parties[id] || { name: "Independent", badge: "bjp" };
 
-          // Render candidate row with party badge
           var candidateTemplate = "<tr>" +
             "<th>" + id + "</th>" +
             "<td><strong>" + name + "</strong></td>" +
@@ -95,7 +113,6 @@ App = {
             "</tr>";
           candidatesResults.append(candidateTemplate);
 
-          // Render dropdown option
           var candidateOption = "<option value='" + id + "'>" + name + " - " + partyInfo.name + "</option>";
           candidatesSelect.append(candidateOption);
         });
@@ -106,7 +123,6 @@ App = {
     }).then(function(hasVoted) {
       if (hasVoted) {
         $('form').hide();
-        // Show already voted message
         $("#candidatesSelect").after(
           "<div style='background:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:10px; text-align:center;'>" +
           "✅ You have already cast your vote. Thank you for participating!" +
@@ -133,7 +149,6 @@ App = {
       alert("❌ Transaction failed. You may have already voted or rejected the MetaMask request.");
     });
   }
-
 };
 
 $(function() {
