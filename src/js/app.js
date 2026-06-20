@@ -3,7 +3,7 @@ App = {
   contracts: {},
   account: '0x0',
   hasVoted: false,
-  isRendering: false,
+  rendered: false,
 
   parties: {
     1: { name: "Bharatiya Janata Party (BJP)", badge: "bjp" },
@@ -63,19 +63,19 @@ App = {
   listenForEvents: function() {
     App.contracts.Election.deployed().then(function(instance) {
       instance.votedEvent({}, {
-        fromBlock: 0,
+        fromBlock: 'latest',
         toBlock: 'latest'
       }).watch(function(error, event) {
         console.log("Vote event triggered", event);
-        App.isRendering = false;
+        App.rendered = false;
         App.render();
       });
     });
   },
 
   render: function() {
-    if (App.isRendering) return;
-    App.isRendering = true;
+    if (App.rendered) return;
+    App.rendered = true;
 
     var electionInstance;
     var loader = $("#loader");
@@ -103,9 +103,14 @@ App = {
       candidatesSelect.empty();
 
       var total = candidatesCount.toNumber();
+      var promises = [];
 
       for (var i = 1; i <= total; i++) {
-        electionInstance.candidates(i).then(function(candidate) {
+        promises.push(electionInstance.candidates(i));
+      }
+
+      return Promise.all(promises).then(function(allCandidates) {
+        allCandidates.forEach(function(candidate) {
           var id = candidate[0].toNumber();
           var name = candidate[1];
           var voteCount = candidate[2].toNumber();
@@ -123,12 +128,11 @@ App = {
           var candidateOption = "<option value='" + id + "'>" + name + " - " + partyInfo.name + "</option>";
           candidatesSelect.append(candidateOption);
         });
-      }
 
-      return electionInstance.voters(App.account);
+        return electionInstance.voters(App.account);
+      });
 
     }).then(function(hasVoted) {
-      App.isRendering = false;
       if (hasVoted) {
         $('form').hide();
         $(".already-voted-msg").remove();
@@ -145,7 +149,7 @@ App = {
       content.show();
     }).catch(function(error) {
       console.warn(error);
-      App.isRendering = false;
+      App.rendered = false;
       loader.hide();
       content.show();
     });
