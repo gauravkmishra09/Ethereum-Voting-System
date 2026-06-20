@@ -3,6 +3,7 @@ App = {
   contracts: {},
   account: '0x0',
   hasVoted: false,
+  isRendering: false,
 
   parties: {
     1: { name: "Bharatiya Janata Party (BJP)", badge: "bjp" },
@@ -66,12 +67,16 @@ App = {
         toBlock: 'latest'
       }).watch(function(error, event) {
         console.log("Vote event triggered", event);
+        App.isRendering = false;
         App.render();
       });
     });
   },
 
   render: function() {
+    if (App.isRendering) return;
+    App.isRendering = true;
+
     var electionInstance;
     var loader = $("#loader");
     var content = $("#content");
@@ -97,11 +102,13 @@ App = {
       var candidatesSelect = $("#candidatesSelect");
       candidatesSelect.empty();
 
-      for (var i = 1; i <= candidatesCount; i++) {
+      var total = candidatesCount.toNumber();
+
+      for (var i = 1; i <= total; i++) {
         electionInstance.candidates(i).then(function(candidate) {
-          var id = candidate[0];
+          var id = candidate[0].toNumber();
           var name = candidate[1];
-          var voteCount = candidate[2];
+          var voteCount = candidate[2].toNumber();
 
           var partyInfo = App.parties[id] || { name: "Independent", badge: "bjp" };
 
@@ -121,18 +128,26 @@ App = {
       return electionInstance.voters(App.account);
 
     }).then(function(hasVoted) {
+      App.isRendering = false;
       if (hasVoted) {
         $('form').hide();
+        $(".already-voted-msg").remove();
         $("#candidatesSelect").after(
-          "<div style='background:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:10px; text-align:center;'>" +
+          "<div class='already-voted-msg' style='background:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:10px; text-align:center;'>" +
           "✅ You have already cast your vote. Thank you for participating!" +
           "</div>"
         );
+      } else {
+        $('form').show();
+        $(".already-voted-msg").remove();
       }
       loader.hide();
       content.show();
     }).catch(function(error) {
       console.warn(error);
+      App.isRendering = false;
+      loader.hide();
+      content.show();
     });
   },
 
