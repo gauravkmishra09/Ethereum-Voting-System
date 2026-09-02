@@ -19,9 +19,34 @@ App = {
   initWeb3: async function() {
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
+
+      // Shim: bundled Web3.js is v0.19.0, which calls provider.sendAsync().
+      // Modern MetaMask only implements request() (EIP-1193), so without this
+      // shim every web3.eth.* / TruffleContract call silently never resolves,
+      // which is why the UI gets stuck on "Connecting wallet...".
+      if (typeof window.ethereum.sendAsync !== 'function') {
+        window.ethereum.sendAsync = function(payload, callback) {
+          window.ethereum.request({ method: payload.method, params: payload.params })
+            .then(function(result) {
+              callback(null, { id: payload.id, jsonrpc: '2.0', result: result });
+            })
+            .catch(function(error) {
+              callback(error, null);
+            });
+        };
+      }
+
       web3 = new Web3(window.ethereum);
+
       try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // Capture the account directly here instead of relying on
+        // web3.eth.getCoinbase() later, which modern MetaMask may not support.
+        if (accounts && accounts.length > 0) {
+          App.account = accounts[0];
+          $("#accountAddress").html("🔗 Connected Wallet: " + App.account);
+        }
+
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
@@ -41,8 +66,18 @@ App = {
             });
           }
         }
+
+        // Keep App.account in sync if the user switches accounts in MetaMask
+        window.ethereum.on('accountsChanged', function(newAccounts) {
+          App.account = newAccounts[0] || '0x0';
+          $("#accountAddress").html("🔗 Connected Wallet: " + App.account);
+          App.rendered = false;
+          App.render();
+        });
+
       } catch (error) {
         console.error('User denied account access', error);
+        $("#accountAddress").html("⚠️ Wallet not connected — please approve the MetaMask request and refresh.");
       }
     } else {
       App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
@@ -84,12 +119,8 @@ App = {
     loader.show();
     content.hide();
 
-    web3.eth.getCoinbase(function(err, account) {
-      if (err === null) {
-        App.account = account;
-        $("#accountAddress").html("🔗 Connected Wallet: " + account);
-      }
-    });
+    // Account is already set in initWeb3 via eth_requestAccounts, so no
+    // getCoinbase() call is needed here.
 
     App.contracts.Election.deployed().then(function(instance) {
       electionInstance = instance;
@@ -110,10 +141,13 @@ App = {
       }
 
       return Promise.all(promises).then(function(allCandidates) {
+        var totalVotes = 0;
+
         allCandidates.forEach(function(candidate) {
           var id = candidate[0].toNumber();
           var name = candidate[1];
           var voteCount = candidate[2].toNumber();
+          totalVotes += voteCount;
 
           var partyInfo = App.parties[id] || { name: "Independent", badge: "bjp" };
 
@@ -128,6 +162,8 @@ App = {
           var candidateOption = "<option value='" + id + "'>" + name + " - " + partyInfo.name + "</option>";
           candidatesSelect.append(candidateOption);
         });
+
+        $("#totalVotes").text(totalVotes);
 
         return electionInstance.voters(App.account);
       });
