@@ -4,22 +4,22 @@ App = {
   account: '0x0',
   hasVoted: false,
   rendered: false,
-
+ 
   parties: {
     1: { name: "Bharatiya Janata Party (BJP)", badge: "bjp" },
     2: { name: "Indian National Congress (INC)", badge: "inc" },
     3: { name: "Aam Aadmi Party (AAP)", badge: "aap" },
     4: { name: "All India Trinamool Congress (TMC)", badge: "tmc" }
   },
-
+ 
   init: function() {
     return App.initWeb3();
   },
-
+ 
   initWeb3: async function() {
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
-
+ 
       // Shim: bundled Web3.js is v0.19.0, which calls provider.sendAsync().
       // Modern MetaMask only implements request() (EIP-1193), so without this
       // shim every web3.eth.* / TruffleContract call silently never resolves,
@@ -35,10 +35,23 @@ App = {
             });
         };
       }
-
+ 
       web3 = new Web3(window.ethereum);
-
+ 
       try {
+        // Force MetaMask's account picker to open every time, instead of
+        // silently reusing whatever account was approved on a previous visit.
+        // Without this, switching the active account in MetaMask has no
+        // effect on this site until you manually disconnect it first.
+        try {
+          await window.ethereum.request({
+            method: 'wallet_requestPermissions',
+            params: [{ eth_accounts: {} }]
+          });
+        } catch (permError) {
+          console.warn('Permission request skipped/denied', permError);
+        }
+ 
         var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         // Capture the account directly here instead of relying on
         // web3.eth.getCoinbase() later, which modern MetaMask may not support.
@@ -46,7 +59,7 @@ App = {
           App.account = accounts[0];
           $("#accountAddress").html("🔗 Connected Wallet: " + App.account);
         }
-
+ 
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
@@ -66,7 +79,7 @@ App = {
             });
           }
         }
-
+ 
         // Keep App.account in sync if the user switches accounts in MetaMask
         window.ethereum.on('accountsChanged', function(newAccounts) {
           App.account = newAccounts[0] || '0x0';
@@ -74,7 +87,7 @@ App = {
           App.rendered = false;
           App.render();
         });
-
+ 
       } catch (error) {
         console.error('User denied account access', error);
         $("#accountAddress").html("⚠️ Wallet not connected — please approve the MetaMask request and refresh.");
@@ -85,7 +98,7 @@ App = {
     }
     return App.initContract();
   },
-
+ 
   initContract: function() {
     $.getJSON("Election.json", function(election) {
       App.contracts.Election = TruffleContract(election);
@@ -94,7 +107,7 @@ App = {
       return App.render();
     });
   },
-
+ 
   listenForEvents: function() {
     App.contracts.Election.deployed().then(function(instance) {
       instance.votedEvent({}, {
@@ -107,50 +120,50 @@ App = {
       });
     });
   },
-
+ 
   render: function() {
     if (App.rendered) return;
     App.rendered = true;
-
+ 
     var electionInstance;
     var loader = $("#loader");
     var content = $("#content");
-
+ 
     loader.show();
     content.hide();
-
+ 
     // Account is already set in initWeb3 via eth_requestAccounts, so no
     // getCoinbase() call is needed here.
-
+ 
     App.contracts.Election.deployed().then(function(instance) {
       electionInstance = instance;
       return electionInstance.candidatesCount();
     }).then(function(candidatesCount) {
-
+ 
       var candidatesResults = $("#candidatesResults");
       candidatesResults.empty();
-
+ 
       var candidatesSelect = $("#candidatesSelect");
       candidatesSelect.empty();
-
+ 
       var total = candidatesCount.toNumber();
       var promises = [];
-
+ 
       for (var i = 1; i <= total; i++) {
         promises.push(electionInstance.candidates(i));
       }
-
+ 
       return Promise.all(promises).then(function(allCandidates) {
         var totalVotes = 0;
-
+ 
         allCandidates.forEach(function(candidate) {
           var id = candidate[0].toNumber();
           var name = candidate[1];
           var voteCount = candidate[2].toNumber();
           totalVotes += voteCount;
-
+ 
           var partyInfo = App.parties[id] || { name: "Independent", badge: "bjp" };
-
+ 
           var candidateTemplate = "<tr>" +
             "<th>" + id + "</th>" +
             "<td><strong>" + name + "</strong></td>" +
@@ -158,16 +171,16 @@ App = {
             "<td class='vote-count'>" + voteCount + "</td>" +
             "</tr>";
           candidatesResults.append(candidateTemplate);
-
+ 
           var candidateOption = "<option value='" + id + "'>" + name + " - " + partyInfo.name + "</option>";
           candidatesSelect.append(candidateOption);
         });
-
+ 
         $("#totalVotes").text(totalVotes);
-
+ 
         return electionInstance.voters(App.account);
       });
-
+ 
     }).then(function(hasVoted) {
       if (hasVoted) {
         $('form').hide();
@@ -190,7 +203,7 @@ App = {
       content.show();
     });
   },
-
+ 
   castVote: function() {
     var candidateId = $("#candidatesSelect").val();
     App.contracts.Election.deployed().then(function(instance) {
@@ -205,9 +218,10 @@ App = {
     });
   }
 };
-
+ 
 $(function() {
   $(window).load(function() {
     App.init();
   });
 });
+ 
