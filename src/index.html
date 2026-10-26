@@ -48,6 +48,9 @@
     @media(max-width:800px){.hero{padding:23px 22px;min-height:0}.hero:after{right:-180px}.container{padding-top:21px}}
     @media(max-width:480px){.hero{padding:20px 18px;border-radius:18px}.hero h1{font-size:33px}.candidate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.candidate-body{padding:12px}.party-logo{width:64px;height:64px}.candidate h3{font-size:14px}.vote-number{font-size:24px}.select-label{gap:5px;font-size:11px}.candidate-footer{align-items:start;flex-direction:column}.stats .stat{padding:11px 9px}.stats .sub{font-size:9px}}
 
+
+    .state-explorer{margin-bottom:22px}.state-intro{max-width:850px;font-size:13px;margin-top:-4px}.state-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0}.state-controls label{font-size:12px;font-weight:800}.state-select{min-width:min(100%,320px);padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-weight:700}.state-details{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}.state-detail-card{border:1px solid var(--line);border-radius:15px;padding:17px;background:linear-gradient(145deg,#fff,#f7f9fc)}.state-detail-card strong{display:block;font-size:20px;letter-spacing:-.03em;margin:6px 0}.state-detail-card small{color:var(--muted);font-size:11px}.state-detail-card p{font-size:12px;margin:7px 0 0}.state-tag{display:inline-block;border-radius:999px;background:#eaf7ef;color:#17683d;font-size:10px;font-weight:800;padding:5px 9px}.state-disclaimer{border-left:3px solid var(--saffron);padding-left:12px}@media(max-width:600px){.state-details{grid-template-columns:1fr}.state-select{width:100%}}
+
   </style>
 </head>
 <body>
@@ -62,6 +65,14 @@
     <div class="stat"><small>Total votes recorded</small><strong id="totalVotes">00</strong><div class="sub">Read from the smart contract</div></div>
     <div class="stat"><small>Candidate list</small><strong>04</strong><div class="sub">Demo candidates</div></div>
     <div class="stat"><small>Network status</small><strong id="networkState" style="font-size:19px">Checking…</strong><div class="sub">Ethereum Sepolia</div></div>
+  </section>
+
+  <section class="panel state-explorer" aria-labelledby="stateExplorerTitle">
+    <div class="panel-head"><div><div class="eyebrow">Explore India</div><h2 id="stateExplorerTitle">State-wise Assembly Elections</h2></div><span class="helper">Election cycle explorer · 2027–2031</span></div>
+    <p class="state-intro">Choose a state or Union Territory to view its next expected Assembly election cycle. Dates are indicative, not official polling notifications. Live voting for each state requires its own deployed election contract and candidate list.</p>
+    <div class="state-controls"><label for="stateElectionSelect">Select state / UT</label><select id="stateElectionSelect" class="state-select"><option value="Uttar Pradesh">Uttar Pradesh</option><option value="Goa">Goa</option><option value="Uttarakhand">Uttarakhand</option><option value="Punjab">Punjab</option><option value="Manipur">Manipur</option><option value="Himachal Pradesh">Himachal Pradesh</option><option value="Gujarat">Gujarat</option><option value="Tripura">Tripura</option><option value="Meghalaya">Meghalaya</option><option value="Nagaland">Nagaland</option><option value="Karnataka">Karnataka</option><option value="Mizoram">Mizoram</option><option value="Chhattisgarh">Chhattisgarh</option><option value="Madhya Pradesh">Madhya Pradesh</option><option value="Rajasthan">Rajasthan</option><option value="Telangana">Telangana</option><option value="Arunachal Pradesh">Arunachal Pradesh</option><option value="Sikkim">Sikkim</option><option value="Andhra Pradesh">Andhra Pradesh</option><option value="Odisha">Odisha</option><option value="Jammu & Kashmir">Jammu &amp; Kashmir</option><option value="Haryana">Haryana</option><option value="Jharkhand">Jharkhand</option><option value="Maharashtra">Maharashtra</option><option value="Delhi">Delhi</option><option value="Bihar">Bihar</option><option value="Tamil Nadu">Tamil Nadu</option><option value="Kerala">Kerala</option><option value="West Bengal">West Bengal</option><option value="Assam">Assam</option><option value="Puducherry">Puducherry</option></select></div>
+    <div id="stateElectionDetails" class="state-details" aria-live="polite"></div>
+    <p class="fineprint">Schedule reference: <a href="https://elections.boomlive.in/elections/upcoming" target="_blank" rel="noopener noreferrer">upcoming election cycle overview</a>. Final dates must be confirmed against Election Commission of India notifications.</p>
   </section>
   <div class="layout">
     <section>
