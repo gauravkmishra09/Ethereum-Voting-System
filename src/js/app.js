@@ -104,7 +104,7 @@ var App = {
         App.contracts.Election.setProvider(App.web3Provider);
         App.refresh().then(resolve).catch(reject);
         try {
-          App.contracts.Election.deployed().then(function(instance) {
+          App.contracts.Election.at("0xf664550a77585d52944db0FbD3CDB2148B7777c9").then(function(instance) {
             if (instance.votedEvent) {
               instance.votedEvent({}, {fromBlock:"latest"}).watch(function(err) {
                 if (!err) App.refresh();
@@ -137,7 +137,7 @@ var App = {
   refresh: async function() {
     if (!App.contracts.Election) return;
     try {
-      const instance = await App.contracts.Election.deployed();
+      const instance = await App.contracts.Election.at("0xf664550a77585d52944db0FbD3CDB2148B7777c9");
       const countBN = await instance.candidatesCount();
       const total = Number(countBN.toString());
       const candidates = [];
