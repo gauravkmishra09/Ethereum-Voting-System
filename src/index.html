@@ -3,93 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Indian General Election 2026 - Blockchain Voting</title>
-  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <meta name="theme-color" content="#101827">
+  <title>JanVote — Decentralised Voting Demo</title>
   <style>
-    *{box-sizing:border-box}
-    body{background:#f0f2f5;font-family:'Segoe UI',sans-serif;margin:0}
-    .header{background:linear-gradient(135deg,#FF6600,#000080,#138808);color:white;text-align:center;padding:24px 16px}
-    .header h1{font-size:24px;font-weight:bold;margin:0}
-    .header p{font-size:13px;margin:4px 0 0;opacity:0.85}
-    .live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);color:white;padding:4px 14px;border-radius:20px;font-size:12px;margin-top:10px}
-    .live-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 1.5s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-    .wrap{max-width:700px;margin:0 auto;padding:20px 16px}
-    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-    .stat-card{background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-    .stat-label{font-size:12px;color:#888;margin-bottom:4px}
-    .stat-value{font-size:22px;font-weight:bold;color:#000080}
-    .card{background:white;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-    .card-title{font-size:18px;font-weight:bold;color:#000080;margin-bottom:16px;border-bottom:2px solid #FF6600;padding-bottom:10px}
-    .candidate-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #f0f0f0}
-    .candidate-row:last-child{border-bottom:none}
-    .party-logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-    .bjp-logo{background:#FFF0E6}
-    .inc-logo{background:#E6F4E6}
-    .aap-logo{background:#E6E6FF}
-    .tmc-logo{background:#E6F7FF}
-    .candidate-info{flex:1}
-    .candidate-name{font-size:15px;font-weight:bold;color:#222}
-    .party-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;margin-top:3px}
-    .bjp-badge{background:#FFF0E6;color:#CC4400}
-    .inc-badge{background:#E6F4E6;color:#0A5C0A}
-    .aap-badge{background:#E6E6FF;color:#0000AA}
-    .tmc-badge{background:#E6F7FF;color:#0077AA}
-    .vote-bar-wrap{width:130px;text-align:right}
-    .vote-count{font-size:20px;font-weight:bold;color:#000080}
-    .vote-bar{height:5px;background:#f0f0f0;border-radius:3px;margin-top:5px}
-    .vote-fill{height:5px;border-radius:3px;transition:width 0.8s ease}
-    .bjp-fill{background:#FF6600}
-    .inc-fill{background:#138808}
-    .aap-fill{background:#0000CC}
-    .tmc-fill{background:#00AAFF}
-    .vote-section{background:#f8f9fa;border-radius:10px;padding:20px;border-left:4px solid #FF6600;margin-top:8px}
-    .vote-section label{font-weight:bold;color:#000080;font-size:15px;display:block;margin-bottom:8px}
-    .form-control{border-radius:8px;border:2px solid #ddd;padding:10px;font-size:14px;width:100%}
-    .btn-vote{background:linear-gradient(135deg,#FF6600,#138808);color:white;border:none;padding:13px 30px;border-radius:8px;font-size:15px;font-weight:bold;width:100%;margin-top:12px;letter-spacing:1px;cursor:pointer}
-    .wallet-info{display:flex;align-items:center;gap:8px;font-size:12px;color:#888;background:#f0f2f5;padding:8px 12px;border-radius:6px;margin-top:14px;word-break:break-all}
-    .etherscan-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#000080;text-decoration:none;margin-top:10px}
-    #loader p{color:#138808;font-weight:bold;font-size:16px;text-align:center;padding:20px}
-    .footer{text-align:center;padding:24px 16px;font-size:13px;color:#888}
-    .footer strong{color:#FF6600;font-size:15px}
+    :root{--ink:#142033;--muted:#687386;--line:#e6eaf0;--paper:#f5f7fb;--saffron:#f47721;--green:#16834a;--blue:#2948bf;--shadow:0 12px 35px rgba(23,35,58,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}button{cursor:pointer}.topbar{background:#111a2b;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.03em}.brand-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#f47721 0 50%,#16834a 50%);font-size:19px}
+    .top-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.pill{font-size:12px;padding:7px 11px;border-radius:999px;background:#263348;color:#e7edf6}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#45d483;margin-right:6px}
+    .container{max-width:1120px;padding:28px 20px 50px;margin:auto}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:8px 0 24px}.eyebrow{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--saffron)}h1{font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.05em;margin:10px 0}p{color:var(--muted);line-height:1.6}.hero p{max-width:640px;margin-bottom:0}
+    .notice{background:#fff8e9;border:1px solid #f6dfad;color:#73531b;padding:12px 15px;border-radius:13px;font-size:13px;line-height:1.5;margin-bottom:20px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.stat{background:white;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;padding:18px}.stat small{display:block;font-size:12px;color:var(--muted);font-weight:700}.stat strong{display:block;font-size:28px;margin-top:7px;letter-spacing:-.04em}.stat .sub{font-size:11px;color:var(--muted);margin-top:3px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:20px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);margin-bottom:20px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.panel h2{font-size:18px;letter-spacing:-.025em;margin:0}.helper{font-size:12px;color:var(--muted)}
+    .candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.candidate{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:white;transition:transform .18s,border-color .18s;min-width:0}.candidate.selected{border-color:#2b4bc0;box-shadow:0 0 0 3px #2b4bc014}.candidate-top{height:8px}.candidate-body{padding:16px}.party-logo{height:70px;width:70px;object-fit:contain;display:block;border-radius:15px;background:#fff;padding:5px;border:1px solid var(--line);margin-bottom:13px}.candidate h3{font-size:15px;line-height:1.25;margin:0 0 5px}.party-name{font-size:12px;color:var(--muted);min-height:31px}.candidate-footer{border-top:1px solid var(--line);margin-top:15px;padding-top:13px;display:flex;justify-content:space-between;align-items:end;gap:10px}.vote-number{font-weight:850;font-size:23px;letter-spacing:-.04em}.vote-caption{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.select-label{display:flex;gap:10px;align-items:center;font-size:12px;font-weight:700}.select-label input{accent-color:#2948bf;width:17px;height:17px}
+    .prereq{display:grid;gap:11px}.check{display:flex;align-items:flex-start;gap:10px;background:#f8f9fc;border:1px solid var(--line);padding:12px;border-radius:12px;font-size:13px}.check input{margin-top:3px;accent-color:#16834a}.check strong{display:block;margin-bottom:3px}.check span{display:block;font-size:11px;line-height:1.4;color:var(--muted)}.btn{border:0;padding:12px 15px;border-radius:11px;font-weight:800;font-size:13px}.btn-primary{background:#18243a;color:white;width:100%;margin-top:14px}.btn-primary:disabled{opacity:.4;cursor:not-allowed}.btn-outline{border:1px solid var(--line);background:white;color:var(--ink)}.camera-box{background:#101827;border-radius:14px;overflow:hidden;position:relative;min-height:110px;display:grid;place-items:center;color:white;margin-top:12px}.camera-box video{width:100%;max-height:220px;object-fit:cover;display:none}.camera-box .camera-placeholder{font-size:12px;padding:20px;text-align:center;color:#d6deea}.camera-actions{display:flex;gap:8px;margin-top:9px}.camera-actions .btn{flex:1}.status{font-size:12px;line-height:1.5;margin-top:10px;color:var(--muted);min-height:18px}.status.error{color:#b42318}.status.success{color:#16834a}.divider{height:1px;background:var(--line);margin:19px 0}.wallet{font-size:12px;padding:11px;border-radius:11px;background:#f4f6fa;overflow-wrap:anywhere;color:#536077;line-height:1.5}.link{color:#2846b8;text-decoration:none;font-size:12px;font-weight:700}.fineprint{font-size:11px;line-height:1.55;color:var(--muted)}.footer{text-align:center;padding-top:20px;color:var(--muted);font-size:12px}.hidden{display:none!important}
+    @media(max-width:800px){.layout{grid-template-columns:1fr}.hero{display:block}.stats{gap:8px}.stat{padding:14px}.stat strong{font-size:23px}.topbar{padding:13px 16px}.container{padding:20px 13px 38px}}
+    @media(max-width:480px){.candidate-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat small{font-size:10px}.stat strong{font-size:20px}.panel{padding:16px}.top-meta .pill:first-child{display:none}}
   </style>
 </head>
 <body>
-<div class="header">
-  <h1>🗳️ Indian General Election 2026</h1>
-  <p>Transparent • Tamper-proof • Powered by Ethereum Blockchain</p>
-  <div class="live-badge"><div class="live-dot"></div>Live on Sepolia Testnet</div>
-</div>
-<div class="wrap">
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-label">Total Votes</div><div class="stat-value" id="totalVotes">0</div></div>
-    <div class="stat-card"><div class="stat-label">Candidates</div><div class="stat-value">4</div></div>
-    <div class="stat-card"><div class="stat-label">Network</div><div class="stat-value" style="font-size:13px;color:#138808">Sepolia</div></div>
-  </div>
-  <div class="card">
-    <div class="card-title">🏛️ Live Election Results</div>
-    <div id="loader"><p>⏳ Connecting to Blockchain...</p></div>
-    <div id="content" style="display:none">
-      <div id="candidatesResults"></div>
-      <div class="vote-section" style="margin-top:20px">
-        <form onsubmit="App.castVote(); return false;">
-          <label>🗳️ Select Candidate to Vote</label>
-          <select class="form-control" id="candidatesSelect"></select>
-          <button type="submit" class="btn-vote">CAST YOUR VOTE 🗳️</button>
-        </form>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">✓</div><span>JanVote <span style="font-weight:500;color:#aab7cc">/ Web3 Demo</span></span></div>
+  <div class="top-meta"><span class="pill"><span class="dot"></span>Sepolia testnet</span><span class="pill" id="walletPill">Wallet not connected</span></div>
+</header>
+<main class="container">
+  <section class="hero"><div><div class="eyebrow">Transparent by design</div><h1>One wallet. One vote.</h1><p>A student project exploring a blockchain-backed voting workflow. Review the candidates, complete the demo readiness checks, then submit your vote through MetaMask.</p></div></section>
+  <div class="notice"><strong>Academic demonstration only.</strong> This is not an official election service and does not verify eligibility to vote in India. Party symbols and candidate names are shown for project demonstration; on-chain vote counts are public on Sepolia.</div>
+  <section class="stats">
+    <div class="stat"><small>Total votes recorded</small><strong id="totalVotes">00</strong><div class="sub">Read from the smart contract</div></div>
+    <div class="stat"><small>Candidate list</small><strong>04</strong><div class="sub">Demo candidates</div></div>
+    <div class="stat"><small>Network status</small><strong id="networkState" style="font-size:19px">Checking…</strong><div class="sub">Ethereum Sepolia</div></div>
+  </section>
+  <div class="layout">
+    <section>
+      <div class="panel">
+        <div class="panel-head"><h2>Candidate list</h2><span class="helper">Live blockchain data</span></div>
+        <div id="candidateGrid" class="candidate-grid">
+          <div class="helper">Connecting to the deployed contract…</div>
+        </div>
+        <div class="divider"></div>
+        <div class="panel-head"><h2>Choose your candidate</h2><span class="helper">One vote per wallet</span></div>
+        <div id="candidateChoices" class="prereq"></div>
+        <div id="voteStatus" class="status" role="status" aria-live="polite">Connect MetaMask to continue.</div>
+        <button id="voteButton" class="btn btn-primary" disabled>Connect wallet to vote</button>
+        <div class="divider"></div>
+        <div class="wallet" id="walletInfo">Wallet: Not connected<br>Contract: 0xf664…7777c9</div>
+        <p style="margin-bottom:0"><a class="link" href="https://sepolia.etherscan.io/address/0xf664550a77585d52944db0FbD3CDB2148B7777c9" target="_blank" rel="noopener noreferrer">View contract on Sepolia Etherscan ↗</a></p>
       </div>
-      <div class="wallet-info"><div class="live-dot"></div><span id="accountAddress">Connecting wallet...</span></div>
-      <div style="text-align:center"><a class="etherscan-link" href="https://sepolia.etherscan.io/address/0xf664550a77585d52944db0FbD3CDB2148B7777c9" target="_blank">🔍 View Smart Contract on Etherscan</a></div>
-    </div>
+    </section>
+    <aside>
+      <div class="panel">
+        <div class="panel-head"><h2>Voting prerequisites</h2><span class="helper">Demo checklist</span></div>
+        <div class="prereq">
+          <label class="check"><input id="walletCheck" type="checkbox" disabled><div><strong>MetaMask connected</strong><span>Connect a browser wallet and use Sepolia test ETH for gas.</span></div></label>
+          <label class="check"><input id="documentCheck" type="checkbox"><div><strong>Document readiness acknowledged</strong><span>Demo acknowledgement only. No Aadhaar number, document image or personal identity data is collected here.</span></div></label>
+          <label class="check"><input id="cameraCheck" type="checkbox" disabled><div><strong>Camera preview started</strong><span>Local camera preview only. It does not identify a person or validate voter eligibility.</span></div></label>
+        </div>
+        <div class="camera-box"><video id="cameraVideo" autoplay muted playsinline></video><div id="cameraPlaceholder" class="camera-placeholder">Camera preview is off.<br>Start it only when ready.</div></div>
+        <div class="camera-actions"><button id="startCamera" class="btn btn-outline" type="button">Start camera</button><button id="stopCamera" class="btn btn-outline" type="button" disabled>Stop</button></div>
+        <div id="cameraStatus" class="status" role="status">Camera permission is optional for this demo; the browser may ask for access.</div>
+        <p class="fineprint">Your browser handles the preview. This page does not upload or store camera footage. A real deployment must use an approved identity/eligibility provider; Aadhaar/DigiLocker must never be simulated as verified.</p>
+      </div>
+      <div class="panel">
+        <h2>Before submitting</h2>
+        <p class="fineprint">1. Install or unlock MetaMask in your browser.<br>2. Switch to Sepolia and ensure you have test ETH for gas.<br>3. Review your selected candidate.<br>4. Confirm the transaction in MetaMask and wait for the blockchain receipt.</p>
+        <p class="fineprint">The smart contract currently enforces one vote per wallet address. That is not the same as one vote per eligible person.</p>
+      </div>
+    </aside>
   </div>
-  <div class="footer">
-    <p>Developed by <strong>Gaurav Kumar Mishra</strong></p>
-    <p style="margin-top:4px">B.Tech Information Technology | ABES Engineering College, Ghaziabad</p>
-    <p style="margin-top:4px">Decentralised Voting System using Ethereum Blockchain</p>
-  </div>
-</div>
+  <footer class="footer">JanVote Student Project · Ethereum Sepolia · Developed for academic demonstration</footer>
+</main>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
 <script src="js/web3.min.js"></script>
 <script src="js/truffle-contract.js"></script>
 <script src="js/app.js"></script>
