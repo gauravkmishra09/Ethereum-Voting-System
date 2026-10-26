@@ -9,10 +9,10 @@ var App = {
   hasVoted: false,
   stream: null,
   parties: {
-    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bharatiya_Janata_Party_logo.svg/160px-Bharatiya_Janata_Party_logo.svg.png"},
-    2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Indian_National_Congress_hand_logo.svg/160px-Indian_National_Congress_hand_logo.svg.png"},
-    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Aam_Aadmi_Party_logo_%28English%29.svg/160px-Aam_Aadmi_Party_logo_%28English%29.svg.png"},
-    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/All_India_Trinamool_Congress_logo.svg/160px-All_India_Trinamool_Congress_logo.svg.png"}
+    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bharatiya_Janata_Party_logo.svg/160px-Bharatiya_Janata_Party_logo.svg.png", leader:"Narendra Modi", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Narendra_Modi_official_portrait.jpg"},
+    2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Indian_National_Congress_hand_logo.svg/160px-Indian_National_Congress_hand_logo.svg.png", leader:"Rahul Gandhi", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Rahul_Gandhi.jpg"},
+    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Aam_Aadmi_Party_logo_%28English%29.svg/160px-Aam_Aadmi_Party_logo_%28English%29.svg.png", leader:"Arvind Kejriwal", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Arvind_Kejriwal.jpg"},
+    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/All_India_Trinamool_Congress_logo.svg/160px-All_India_Trinamool_Congress_logo.svg.png", leader:"Mamata Banerjee", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Mamata_Banerjee.jpg"}
   },
   init: async function() {
     $("#voteButton").on("click", App.castVote);
@@ -172,13 +172,18 @@ var App = {
     App.candidates.forEach(function(candidate) {
       const info = App.parties[candidate.id] || {party:candidate.party, color:"#64748b", logo:""};
       const share = total ? Math.round(candidate.votes / total * 100) : 0;
-      const card = $("<article class='candidate' data-id='" + candidate.id + "'><div class='candidate-top' style='background:" + info.color + "'></div><div class='candidate-body'><img class='party-logo' alt='' loading='lazy'><h3></h3><div class='party-name'></div><div class='candidate-footer'><div><div class='vote-number'></div><div class='vote-caption'>Votes · " + share + "%</div></div><label class='select-label'><input type='radio' name='candidate' value='" + candidate.id + "'> Select</label></div></div></article>");
+      const card = $("<article class='candidate' data-id='" + candidate.id + "'><div class='candidate-top' style='background:" + info.color + "'></div><div class='candidate-body'><img class='party-logo' alt='' loading='lazy'><div class='leader-row'><img class='leader-photo' alt='' loading='lazy'><div class='leader-copy'><h3></h3><div class='party-name'></div><div class='leader-name'></div></div></div><div class='candidate-footer'><div><div class='vote-number'></div><div class='vote-caption'>Votes · " + share + "%</div></div><label class='select-label'><input type='radio' name='candidate' value='" + candidate.id + "'> Select</label></div></div></article>");
       const img = card.find("img");
       if (info.logo) img.attr("src", info.logo).attr("alt", info.short + " party symbol");
       else img.hide();
       img.on("error", function(){ $(this).hide(); });
+      const leaderImg = card.find(".leader-photo");
+      if (info.leaderPhoto) leaderImg.attr("src", info.leaderPhoto).attr("alt", (info.leader || candidate.name) + " photo");
+      else leaderImg.hide();
+      leaderImg.on("error", function(){ $(this).hide(); });
       card.find("h3").text(candidate.name);
       card.find(".party-name").text(info.party || candidate.party);
+      card.find(".leader-name").text(info.leader ? "Party leader: " + info.leader : "");
       card.find(".vote-number").text(String(candidate.votes).padStart(2,"0"));
       grid.append(card);
       const choice = $("<label class='check'><input type='radio' name='candidate' value='" + candidate.id + "'><div><strong></strong><span></span></div></label>");
