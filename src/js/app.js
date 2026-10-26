@@ -9,10 +9,10 @@ var App = {
   hasVoted: false,
   stream: null,
   parties: {
-    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", badge:"bjp", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/1/13/BJP_Flag.svg"},
-    2: {party:"Indian National Congress (INC)", short:"INC", badge:"inc", color:"#16834a", logo:"https://upload.wikimedia.org/wikipedia/commons/4/4e/Hand_INC.svg"},
-    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", badge:"aap", color:"#2846b8", logo:"https://upload.wikimedia.org/wikipedia/commons/2/2f/Aam_Aadmi_Party_logo_%28English%29.svg"},
-    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", badge:"tmc", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/5/5b/All_India_Trinamool_Congress_Logo.svg"}
+    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_flower_symbol.svg"},
+    2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Indian_National_Congress_hand_logo.svg"},
+    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Aam_Aadmi_Party_logo_(English).svg"},
+    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/All_India_Trinamool_Congress_logo.svg"}
   },
   init: async function() {
     $("#voteButton").on("click", App.castVote);
@@ -34,6 +34,14 @@ var App = {
       return;
     }
     App.web3Provider = window.ethereum;
+    // The bundled legacy Web3.js expects sendAsync; bridge it to MetaMask's EIP-1193 request API.
+    if (typeof window.ethereum.sendAsync !== "function") {
+      window.ethereum.sendAsync = function(payload, callback) {
+        window.ethereum.request({method:payload.method, params:payload.params || []})
+          .then(function(result) { callback(null, {id:payload.id, jsonrpc:"2.0", result:result}); })
+          .catch(function(error) { callback(error, null); });
+      };
+    }
     try {
       const accounts = await window.ethereum.request({method:"eth_requestAccounts"});
       App.account = accounts && accounts[0] ? accounts[0] : null;
@@ -50,10 +58,9 @@ var App = {
         App.renderWallet();
         App.refresh();
       });
-      window.ethereum.on("chainChanged", async function(chainId) {
+      window.ethereum.on("chainChanged", function(chainId) {
         App.chainId = chainId;
         $("#networkState").text(chainId === "0xaa36a7" ? "Sepolia" : "Wrong network");
-        // Reloading avoids a Truffle artifact/network cache after a wallet network switch.
         window.location.reload();
       });
       App.renderWallet();
@@ -136,9 +143,8 @@ var App = {
       const candidates = [];
       for (let i=1; i<=total; i++) {
         const c = await instance.candidates(i);
-        // The deployed ABI may expose either (id,name,voteCount) or (id,name,party,voteCount).
-        const partyField = c[2];
-        const hasParty = typeof partyField === "string";
+        // Some deployed artifacts expose (id,name,voteCount), others (id,name,party,voteCount).
+        const hasParty = typeof c[2] === "string";
         const voteIndex = hasParty ? 3 : 2;
         candidates.push({id:Number(c[0].toString()), name:c[1], party:hasParty ? c[2] : (App.parties[i] || {}).party || "Independent", votes:Number(c[voteIndex].toString())});
       }
@@ -168,7 +174,8 @@ var App = {
       const share = total ? Math.round(candidate.votes / total * 100) : 0;
       const card = $("<article class='candidate' data-id='" + candidate.id + "'><div class='candidate-top' style='background:" + info.color + "'></div><div class='candidate-body'><img class='party-logo' alt='' loading='lazy'><h3></h3><div class='party-name'></div><div class='candidate-footer'><div><div class='vote-number'></div><div class='vote-caption'>Votes · " + share + "%</div></div><label class='select-label'><input type='radio' name='candidate' value='" + candidate.id + "'> Select</label></div></div></article>");
       const img = card.find("img");
-      img.attr("src", info.logo).attr("alt", info.short + " party symbol");
+      if (info.logo) img.attr("src", info.logo).attr("alt", info.short + " party symbol");
+      else img.hide();
       img.on("error", function(){ $(this).hide(); });
       card.find("h3").text(candidate.name);
       card.find(".party-name").text(info.party || candidate.party);
