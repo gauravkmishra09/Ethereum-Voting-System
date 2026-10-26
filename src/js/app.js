@@ -9,10 +9,10 @@ var App = {
   hasVoted: false,
   stream: null,
   parties: {
-    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Lotus_flower_symbol.svg"},
-    2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Indian_National_Congress_hand_logo.svg"},
-    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/Aam_Aadmi_Party_logo_(English).svg"},
-    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://commons.wikimedia.org/wiki/Special:FilePath/All_India_Trinamool_Congress_logo.svg"}
+    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bharatiya_Janata_Party_logo.svg/160px-Bharatiya_Janata_Party_logo.svg.png"},
+    2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Indian_National_Congress_hand_logo.svg/160px-Indian_National_Congress_hand_logo.svg.png"},
+    3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Aam_Aadmi_Party_logo_%28English%29.svg/160px-Aam_Aadmi_Party_logo_%28English%29.svg.png"},
+    4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/All_India_Trinamool_Congress_logo.svg/160px-All_India_Trinamool_Congress_logo.svg.png"}
   },
   init: async function() {
     $("#voteButton").on("click", App.castVote);
