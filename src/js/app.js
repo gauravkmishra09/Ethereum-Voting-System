@@ -270,4 +270,68 @@ var App = {
     App.updateVoteReadiness();
   }
 };
-$(function(){ App.init(); window.addEventListener("beforeunload",App.stopCamera); });
+
+/* State-wise explorer is informational only. It never changes the live contract or vote counts. */
+var StateElectionExplorer = {
+  cycles: {
+    "Goa": ["2027", "40 Assembly seats", "Expected cycle: early 2027"],
+    "Uttarakhand": ["2027", "70 Assembly seats", "Expected cycle: early 2027"],
+    "Punjab": ["2027", "117 Assembly seats", "Expected cycle: early 2027"],
+    "Manipur": ["2027", "60 Assembly seats", "Expected cycle: early 2027"],
+    "Uttar Pradesh": ["2027", "403 Assembly seats", "Expected cycle: early 2027"],
+    "Himachal Pradesh": ["2027", "68 Assembly seats", "Expected cycle: late 2027"],
+    "Gujarat": ["2027", "182 Assembly seats", "Expected cycle: late 2027"],
+    "Tripura": ["2028", "60 Assembly seats", "Expected cycle: early 2028"],
+    "Meghalaya": ["2028", "60 Assembly seats", "Expected cycle: early 2028"],
+    "Nagaland": ["2028", "60 Assembly seats", "Expected cycle: early 2028"],
+    "Karnataka": ["2028", "224 Assembly seats", "Expected cycle: mid 2028"],
+    "Mizoram": ["2028", "40 Assembly seats", "Expected cycle: late 2028"],
+    "Chhattisgarh": ["2028", "90 Assembly seats", "Expected cycle: late 2028"],
+    "Madhya Pradesh": ["2028", "230 Assembly seats", "Expected cycle: late 2028"],
+    "Rajasthan": ["2028", "200 Assembly seats", "Expected cycle: late 2028"],
+    "Telangana": ["2028", "119 Assembly seats", "Expected cycle: late 2028"],
+    "Arunachal Pradesh": ["2029", "60 Assembly seats", "Expected cycle: spring 2029"],
+    "Sikkim": ["2029", "32 Assembly seats", "Expected cycle: spring 2029"],
+    "Andhra Pradesh": ["2029", "175 Assembly seats", "Expected cycle: mid 2029"],
+    "Odisha": ["2029", "147 Assembly seats", "Expected cycle: mid 2029"],
+    "Jammu & Kashmir": ["2029*", "90 Assembly seats", "Indicative cycle: 2029; verify official notifications"],
+    "Haryana": ["2029", "90 Assembly seats", "Expected cycle: late 2029"],
+    "Jharkhand": ["2029", "81 Assembly seats", "Expected cycle: late 2029"],
+    "Maharashtra": ["2029", "288 Assembly seats", "Expected cycle: late 2029"],
+    "Delhi": ["2030", "70 Assembly seats", "Expected cycle: early 2030"],
+    "Bihar": ["2030", "243 Assembly seats", "Expected cycle: late 2030"],
+    "Tamil Nadu": ["2031", "234 Assembly seats", "Expected cycle: spring 2031"],
+    "Kerala": ["2031", "140 Assembly seats", "Expected cycle: spring 2031"],
+    "West Bengal": ["2031", "294 Assembly seats", "Expected cycle: spring 2031"],
+    "Assam": ["2031", "126 Assembly seats", "Expected cycle: spring 2031"],
+    "Puducherry": ["2031", "30 Assembly seats", "Expected cycle: spring 2031"]
+  },
+  render: function() {
+    var select = document.getElementById("stateElectionSelect");
+    var target = document.getElementById("stateElectionDetails");
+    if (!select || !target) return;
+    var state = select.value;
+    var data = this.cycles[state];
+    if (!data) return;
+    target.innerHTML = "";
+    var cycle = document.createElement("div");
+    cycle.className = "state-detail-card";
+    cycle.innerHTML = "<span class='state-tag'>Indicative cycle</span><small>STATE / UNION TERRITORY</small><strong></strong><p></p>";
+    cycle.querySelector("strong").textContent = state;
+    cycle.querySelector("p").textContent = data[2] + ". Exact polling dates are announced by the Election Commission.";
+    var seats = document.createElement("div");
+    seats.className = "state-detail-card";
+    seats.innerHTML = "<small>LEGISLATIVE ASSEMBLY</small><strong></strong><p class='state-disclaimer'>This explorer is informational. It is not a live state election and does not submit votes.</p>";
+    seats.querySelector("strong").textContent = data[1];
+    target.appendChild(cycle);
+    target.appendChild(seats);
+  },
+  init: function() {
+    var select = document.getElementById("stateElectionSelect");
+    if (!select) return;
+    select.addEventListener("change", this.render.bind(this));
+    this.render();
+  }
+};
+
+$(function(){ App.init(); StateElectionExplorer.init(); window.addEventListener("beforeunload",App.stopCamera); });
