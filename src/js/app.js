@@ -9,7 +9,7 @@ var App = {
   hasVoted: false,
   stream: null,
   parties: {
-    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bharatiya_Janata_Party_logo.svg/160px-Bharatiya_Janata_Party_logo.svg.png", leader:"Narendra Modi", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Narendra_Modi_official_portrait.jpg"},
+    1: {party:"Bharatiya Janata Party (BJP)", short:"BJP", color:"#f47721", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bharatiya_Janata_Party_logo.svg/160px-Bharatiya_Janata_Party_logo.svg.png", leader:"Narendra Modi", leaderPhoto:"https://www.pmindia.gov.in/wp-content/uploads/2025/12/02.jpg"},
     2: {party:"Indian National Congress (INC)", short:"INC", color:"#16834a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Indian_National_Congress_hand_logo.svg/160px-Indian_National_Congress_hand_logo.svg.png", leader:"Rahul Gandhi", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Rahul_Gandhi.jpg"},
     3: {party:"Aam Aadmi Party (AAP)", short:"AAP", color:"#2846b8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Aam_Aadmi_Party_logo_%28English%29.svg/160px-Aam_Aadmi_Party_logo_%28English%29.svg.png", leader:"Arvind Kejriwal", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Arvind_Kejriwal.jpg"},
     4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/All_India_Trinamool_Congress_logo.svg/160px-All_India_Trinamool_Congress_logo.svg.png", leader:"Mamata Banerjee", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Mamata_Banerjee.jpg"}
@@ -218,11 +218,12 @@ var App = {
     $("#voteButton").prop("disabled",true).text("Waiting for MetaMask…");
     App.status("Confirm the transaction in MetaMask. Your vote is not counted until the transaction is mined.", "");
     try {
-      const instance = await App.contracts.Election.deployed();
+      const instance = await App.contracts.Election.at("0xf664550a77585d52944db0FbD3CDB2148B7777c9");
       const tx = await instance.vote(App.selectedCandidate, {from:App.account});
       App.status("Transaction submitted: " + tx.tx + ". Waiting for confirmation…", "");
       await App.waitForReceipt(tx.tx);
       App.status("Vote transaction confirmed on Sepolia. Refreshing live counts…", "success");
+      await new Promise(resolve => setTimeout(resolve, 1800));
       await App.refresh();
     } catch (err) {
       console.error(err);
