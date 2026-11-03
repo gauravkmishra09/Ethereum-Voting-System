@@ -15,10 +15,17 @@ var App = {
     4: {party:"All India Trinamool Congress (TMC)", short:"TMC", color:"#00a7d8", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/All_India_Trinamool_Congress_logo.svg/160px-All_India_Trinamool_Congress_logo.svg.png", leader:"Mamata Banerjee", leaderPhoto:"https://commons.wikimedia.org/wiki/Special:FilePath/Mamata_Banerjee.jpg"}
   },
   init: async function() {
+    App.demoMode = true;
+    App.account = "Local demo voter";
+    App.chainId = "LOCAL";
+    $("#networkState").text("Local demo");
+    $(".top-meta").append("<span class='pill' style='background:#174c3a'>LOCAL DEMO · NOT ON BLOCKCHAIN</span>");
+    $("#walletPill").text("Local demo");
+    $("#walletInfo").text("Local demo mode. No wallet connected and no blockchain transaction will be sent.");
     $("#voteButton").on("click", App.castVote);
-    $("#startCamera").on("click", App.startCamera);
-    $("#stopCamera").on("click", App.stopCamera);
-    $("#documentCheck").on("change", App.updateVoteReadiness);
+    $("#cameraStatus").text("Camera is not required in local demo mode. No identity check is performed.");
+    $("#cameraCheck, #documentCheck").prop("checked", true);
+    $("#startCamera, #stopCamera").prop("disabled", true);
     $("#candidateChoices, #candidateGrid").on("change", "input[name=candidate]", function() {
       App.selectedCandidate = Number(this.value);
       $("input[name=candidate]").prop("checked", false);
@@ -27,49 +34,38 @@ var App = {
       $(".candidate[data-id='" + App.selectedCandidate + "']").addClass("selected");
       App.updateVoteReadiness();
     });
-    if (!window.ethereum) {
-      $("#networkState").text("No wallet");
-      App.status("MetaMask was not detected. Install/enable the MetaMask browser extension, then reload.", "error");
-      await App.loadContractReadOnly();
-      return;
-    }
-    App.web3Provider = window.ethereum;
-    // The bundled legacy Web3.js expects sendAsync; bridge it to MetaMask's EIP-1193 request API.
-    if (typeof window.ethereum.sendAsync !== "function") {
-      window.ethereum.sendAsync = function(payload, callback) {
-        window.ethereum.request({method:payload.method, params:payload.params || []})
-          .then(function(result) { callback(null, {id:payload.id, jsonrpc:"2.0", result:result}); })
-          .catch(function(error) { callback(error, null); });
-      };
-    }
-    try {
-      const accounts = await window.ethereum.request({method:"eth_requestAccounts"});
-      App.account = accounts && accounts[0] ? accounts[0] : null;
-      App.chainId = await window.ethereum.request({method:"eth_chainId"});
-      if (App.chainId !== "0xaa36a7") {
-        await App.handleNetwork(true);
-        App.chainId = await window.ethereum.request({method:"eth_chainId"});
-      } else {
-        $("#networkState").text("Sepolia");
-      }
-      window.ethereum.on("accountsChanged", function(accounts) {
-        App.account = accounts && accounts[0] ? accounts[0] : null;
-        App.hasVoted = false;
-        App.renderWallet();
-        App.refresh();
-      });
-      window.ethereum.on("chainChanged", function(chainId) {
-        App.chainId = chainId;
-        $("#networkState").text(chainId === "0xaa36a7" ? "Sepolia" : "Wrong network");
-        window.location.reload();
-      });
-      App.renderWallet();
-      await App.initContract();
-    } catch (err) {
-      console.error(err);
-      App.status("Wallet connection was not completed. Approve MetaMask and select Sepolia, then reload. Public results may still be available.", "error");
-      await App.loadContractReadOnly();
-    }
+    App.candidates = [
+      {id:1,name:"Narendra Modi",party:"Bharatiya Janata Party (BJP)",votes:0},
+      {id:2,name:"Rahul Gandhi",party:"Indian National Congress (INC)",votes:0},
+      {id:3,name:"Arvind Kejriwal",party:"Aam Aadmi Party (AAP)",votes:0},
+      {id:4,name:"Mamata Banerjee",party:"All India Trinamool Congress (TMC)",votes:0}
+    ];
+    App.loadDemoState();
+    App.renderCandidates();
+    $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
+    App.renderWallet();
+    $("#voteStatus").text("Local demo is ready. Votes stay in this browser and are not submitted to Ethereum.");
+    $("#totalVotes").after(" <button type='button' id='resetDemoVotes' class='btn btn-outline' style='margin-left:10px;padding:7px 10px;font-size:12px'>Reset demo votes to 0</button>");
+    $("#resetDemoVotes").on("click", function() {
+      if (!window.confirm("Reset votes stored in this browser? Blockchain records are unchanged.")) return;
+      localStorage.removeItem("janvote-local-demo-v1");
+      App.loadDemoState(); App.renderCandidates();
+      $("#totalVotes").text("00");
+      App.updateVoteReadiness();
+      App.status("Local demo votes reset to 0. Blockchain records were not changed.", "success");
+    });
+    App.updateVoteReadiness();
+  },
+  loadDemoState: function() {
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem("janvote-local-demo-v1") || "{}"); } catch(e) {}
+    App.candidates.forEach(function(c) { c.votes = Number((saved.counts || {})[c.id] || 0); });
+    App.hasVoted = !!saved.hasVoted;
+  },
+  saveDemoState: function() {
+    var counts = {};
+    App.candidates.forEach(function(c) { counts[c.id] = c.votes; });
+    localStorage.setItem("janvote-local-demo-v1", JSON.stringify({counts:counts,hasVoted:App.hasVoted}));
   },
   handleNetwork: async function(allowSwitch) {
     if (App.chainId === "0xaa36a7") {
@@ -128,6 +124,13 @@ var App = {
     }
   },
   renderWallet: function() {
+    if (App.demoMode) {
+      $("#walletPill").text("Local demo");
+      $("#walletCheck").prop("checked", true);
+      $("#walletInfo").text("Local demo mode · No wallet connected · No blockchain transaction");
+      App.updateVoteReadiness();
+      return;
+    }
     var connected = !!App.account;
     $("#walletPill").text(connected ? App.account.slice(0,6) + "…" + App.account.slice(-4) : "Wallet not connected");
     $("#walletCheck").prop("checked", connected);
@@ -135,34 +138,10 @@ var App = {
     App.updateVoteReadiness();
   },
   refresh: async function() {
-    if (!App.contracts.Election) return;
-    try {
-      const instance = await App.contracts.Election.at("0xf664550a77585d52944db0FbD3CDB2148B7777c9");
-      const countBN = await instance.candidatesCount();
-      const total = Number(countBN.toString());
-      const candidates = [];
-      for (let i=1; i<=total; i++) {
-        const c = await instance.candidates(i);
-        // Some deployed artifacts expose (id,name,voteCount), others (id,name,party,voteCount).
-        const hasParty = typeof c[2] === "string";
-        const voteIndex = hasParty ? 3 : 2;
-        candidates.push({id:Number(c[0].toString()), name:c[1], party:hasParty ? c[2] : (App.parties[i] || {}).party || "Independent", votes:Number(c[voteIndex].toString())});
-      }
-      App.candidates = candidates;
-      App.hasVoted = false;
-      if (App.account && App.chainId === "0xaa36a7") {
-        try { App.hasVoted = await instance.voters(App.account); } catch(e) { console.warn("Could not read voter status",e); }
-      }
-      App.renderCandidates();
-      $("#totalVotes").text(String(candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
-      if (App.hasVoted) App.status("This wallet has already voted according to the smart contract. A second vote will be rejected.", "success");
-      else if (App.account) App.status("Contract data loaded. Complete the demo checklist to enable voting.", "");
-      App.updateVoteReadiness();
-    } catch (err) {
-      console.error(err);
-      App.status("Could not read votes from the deployed contract. Verify the network, ABI and deployment address.", "error");
-      $("#candidateGrid").html("<p class='helper'>Live contract data is unavailable. No placeholder vote counts are being displayed.</p>");
-    }
+    if (!App.demoMode) return;
+    App.loadDemoState(); App.renderCandidates();
+    $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
+    App.updateVoteReadiness();
   },
   renderCandidates: function() {
     const grid = $("#candidateGrid");
@@ -198,38 +177,23 @@ var App = {
     }
   },
   updateVoteReadiness: function() {
-    const ok = !!App.account && App.chainId === "0xaa36a7" && $("#documentCheck").is(":checked") && $("#cameraCheck").is(":checked") && App.selectedCandidate && !App.hasVoted;
+    const ok = App.demoMode && !!App.selectedCandidate && !App.hasVoted;
     $("#voteButton").prop("disabled", !ok);
-    $("#voteButton").text(App.hasVoted ? "Vote already recorded" : ok ? "Cast vote via MetaMask" : "Complete prerequisites to vote");
+    $("#voteButton").text(App.hasVoted ? "Demo vote recorded" : ok ? "Cast local demo vote" : "Select a candidate");
   },
   status: function(message, kind) {
     $("#voteStatus").text(message).removeClass("error success").addClass(kind || "");
   },
   castVote: async function() {
-    if (!App.account || App.selectedCandidate == null) return;
-    if (!$("#documentCheck").is(":checked") || !$("#cameraCheck").is(":checked")) {
-      App.status("Complete the document-readiness acknowledgement and start the camera preview first.", "error"); return;
-    }
-    const onSepolia = await App.handleNetwork(true);
-    if (!onSepolia) return;
-    if (App.hasVoted) {
-      App.status("This wallet has already voted; the contract permits one vote per wallet.", "error"); return;
-    }
-    $("#voteButton").prop("disabled",true).text("Waiting for MetaMask…");
-    App.status("Confirm the transaction in MetaMask. Your vote is not counted until the transaction is mined.", "");
-    try {
-      const instance = await App.contracts.Election.at("0xf664550a77585d52944db0FbD3CDB2148B7777c9");
-      const tx = await instance.vote(App.selectedCandidate, {from:App.account});
-      App.status("Transaction submitted: " + tx.tx + ". Waiting for confirmation…", "");
-      await App.waitForReceipt(tx.tx);
-      App.status("Vote transaction confirmed on Sepolia. Refreshing live counts…", "success");
-      await new Promise(resolve => setTimeout(resolve, 1800));
-      await App.refresh();
-    } catch (err) {
-      console.error(err);
-      const msg = err && (err.message || err.reason) || "Transaction failed.";
-      App.status(msg.toLowerCase().includes("already voted") ? "The contract says this wallet has already voted." : "Vote was not recorded. You may have rejected the MetaMask prompt or the transaction failed. " + msg.slice(0,180), "error");
-    } finally { App.updateVoteReadiness(); }
+    if (!App.demoMode || App.selectedCandidate == null) return;
+    if (App.hasVoted) { App.status("This browser has already cast its local demo vote. Reset to try again.", "error"); return; }
+    var candidate = App.candidates.find(function(c){ return c.id === App.selectedCandidate; });
+    if (!candidate) return;
+    candidate.votes += 1; App.hasVoted = true; App.saveDemoState();
+    App.renderCandidates();
+    $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
+    App.status("Local demo vote recorded for " + candidate.name + ". This is not an Ethereum transaction.", "success");
+    App.updateVoteReadiness();
   },
   waitForReceipt: async function(txHash) {
     for (let i=0;i<90;i++) {
