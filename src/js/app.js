@@ -42,6 +42,7 @@ var App = {
     ];
     App.loadDemoState();
     App.renderCandidates();
+    $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
     App.renderWallet();
     $("#voteStatus").text("Local demo is ready. Votes stay in this browser and are not submitted to Ethereum.");
     $("#totalVotes").after(" <button type='button' id='resetDemoVotes' class='btn btn-outline' style='margin-left:10px;padding:7px 10px;font-size:12px'>Reset demo votes to 0</button>");
@@ -123,6 +124,13 @@ var App = {
     }
   },
   renderWallet: function() {
+    if (App.demoMode) {
+      $("#walletPill").text("Local demo");
+      $("#walletCheck").prop("checked", true);
+      $("#walletInfo").text("Local demo mode · No wallet connected · No blockchain transaction");
+      App.updateVoteReadiness();
+      return;
+    }
     var connected = !!App.account;
     $("#walletPill").text(connected ? App.account.slice(0,6) + "…" + App.account.slice(-4) : "Wallet not connected");
     $("#walletCheck").prop("checked", connected);
