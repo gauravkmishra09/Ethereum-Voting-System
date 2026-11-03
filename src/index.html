@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101827">
-  <title>JanVote — Decentralised Voting Demo</title>
+  <title>JanVote — Decentralised Voting System</title>
   <style>
     :root{--ink:#142033;--muted:#687386;--line:#e6eaf0;--paper:#f5f7fb;--saffron:#f47721;--green:#16834a;--blue:#2948bf;--shadow:0 12px 35px rgba(23,35,58,.08)}
     *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -57,14 +57,14 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><div class="brand-mark">✓</div><span>JanVote <span style="font-weight:500;color:#aab7cc">/ Web3 Demo</span></span></div>
+  <div class="brand"><div class="brand-mark">✓</div><span>JanVote <span style="font-weight:500;color:#aab7cc">/ Voting System</span></span></div>
   <div class="top-meta"><span class="pill"><span class="dot"></span>Sepolia testnet</span><span class="pill" id="walletPill">Wallet not connected</span></div>
 </header>
 <main class="container">
   <section class="hero"><div><div class="eyebrow">Transparent by design</div><h1>One wallet. One vote.</h1><p>A student project exploring a blockchain-backed voting workflow. Review the candidates, complete the demo readiness checks, then submit your vote through MetaMask.</p></div></section>
-  <div class="notice"><strong>Academic demonstration only.</strong> This is not an official election service and does not verify eligibility to vote in India. Party symbols and candidate names are shown for project demonstration; on-chain vote counts are public on Sepolia.</div>
+  <div class="notice"><strong>Academic demonstration only.</strong> This is not an official election service and does not verify eligibility to vote in India. In the current local demo mode, votes are stored in this browser and are not submitted to Ethereum. Candidate names and party symbols are shown for project demonstration.</div>
   <section class="stats">
-    <div class="stat"><small>Total votes recorded</small><strong id="totalVotes">00</strong><div class="sub">Read from the smart contract</div></div>
+    <div class="stat"><small>Total votes recorded</small><strong id="totalVotes">00</strong><div class="sub">Demo count stored in this browser</div></div>
     <div class="stat"><small>Candidate list</small><strong>04</strong><div class="sub">Demo candidates</div></div>
     <div class="stat"><small>Network status</small><strong id="networkState" style="font-size:19px">Checking…</strong><div class="sub">Ethereum Sepolia</div></div>
   </section>
@@ -79,7 +79,7 @@
   <div class="layout">
     <section>
       <div class="panel">
-        <div class="panel-head"><h2>Candidate list</h2><span class="helper">Live blockchain data</span></div>
+        <div class="panel-head"><h2>Candidate list</h2><span class="helper">Voting system candidates</span></div>
         <div id="candidateGrid" class="candidate-grid">
           <div class="helper">Connecting to the deployed contract…</div>
         </div>
