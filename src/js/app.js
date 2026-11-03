@@ -19,13 +19,17 @@ var App = {
     App.account = "Local demo voter";
     App.chainId = "LOCAL";
     $("#networkState").text("Local demo");
-    $(".top-meta").append("<span class='pill' style='background:#174c3a'>LOCAL DEMO · NOT ON BLOCKCHAIN</span>");
+    $(".top-meta").append("<span class='pill' style='background:#174c3a'>VOTING SYSTEM</span>");
     $("#walletPill").text("Local demo");
     $("#walletInfo").text("Local demo mode. No wallet connected and no blockchain transaction will be sent.");
     $("#voteButton").on("click", App.castVote);
-    $("#cameraStatus").text("Camera is not required in local demo mode. No identity check is performed.");
-    $("#cameraCheck, #documentCheck").prop("checked", true);
-    $("#startCamera, #stopCamera").prop("disabled", true);
+    $("#cameraStatus").text("Camera preview is optional. It does not verify identity or voter eligibility.");
+    $("#documentCheck").prop("checked", true);
+    $("#cameraCheck").prop("checked", false);
+    $("#startCamera").prop("disabled", false);
+    $("#stopCamera").prop("disabled", true);
+    $("#startCamera").on("click", App.startCamera);
+    $("#stopCamera").on("click", App.stopCamera);
     $("#candidateChoices, #candidateGrid").on("change", "input[name=candidate]", function() {
       App.selectedCandidate = Number(this.value);
       $("input[name=candidate]").prop("checked", false);
@@ -44,7 +48,7 @@ var App = {
     App.renderCandidates();
     $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
     App.renderWallet();
-    $("#voteStatus").text("Local demo is ready. Votes stay in this browser and are not submitted to Ethereum.");
+    $("#voteStatus").text("Voting system demo is ready. Votes are stored in this browser and are not submitted to Ethereum.");
     $("#totalVotes").after(" <button type='button' id='resetDemoVotes' class='btn btn-outline' style='margin-left:10px;padding:7px 10px;font-size:12px'>Reset demo votes to 0</button>");
     $("#resetDemoVotes").on("click", function() {
       if (!window.confirm("Reset votes stored in this browser? Blockchain records are unchanged.")) return;
@@ -215,6 +219,7 @@ var App = {
       const video = document.getElementById("cameraVideo");
       video.srcObject = App.stream;
       video.style.display = "block";
+      await video.play();
       $("#cameraPlaceholder").addClass("hidden");
       $("#cameraCheck").prop("checked",true);
       $("#startCamera").prop("disabled",true);
@@ -222,7 +227,17 @@ var App = {
       $("#cameraStatus").text("Camera preview running locally. No identity match is performed and no video is uploaded.").removeClass("error").addClass("success");
       App.updateVoteReadiness();
     } catch(err) {
-      $("#cameraStatus").text("Camera access was not granted. Allow camera permission in the browser and retry if appropriate.").removeClass("success").addClass("error");
+      var cameraError = err && err.name ? err.name : "UnknownError";
+      var cameraMessage = cameraError === "NotAllowedError" || cameraError === "PermissionDeniedError"
+        ? "Camera permission was denied. Allow camera access for this site in your browser settings, then try again."
+        : cameraError === "NotFoundError" || cameraError === "DevicesNotFoundError"
+          ? "No camera was found. Connect or enable a camera and try again."
+          : cameraError === "NotReadableError" || cameraError === "TrackStartError"
+            ? "The camera is busy in another app or tab. Close other camera apps and retry."
+            : cameraError === "SecurityError"
+              ? "The browser blocked camera access. Open this site over HTTPS and check site permissions."
+              : "Camera could not start (" + cameraError + "). Check browser permissions and make sure no other app is using it.";
+      $("#cameraStatus").text(cameraMessage).removeClass("success").addClass("error");
     }
   },
   stopCamera: function() {
