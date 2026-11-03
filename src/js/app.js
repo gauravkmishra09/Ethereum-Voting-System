@@ -67,7 +67,7 @@ var App = {
     App.candidates.forEach(function(c) { counts[c.id] = c.votes; });
     localStorage.setItem("janvote-local-demo-v1", JSON.stringify({counts:counts,hasVoted:App.hasVoted}));
   },
-  handleNetwork:  handleNetwork: async function(allowSwitch) {
+  handleNetwork: async function(allowSwitch) {
     if (App.chainId === "0xaa36a7") {
       $("#networkState").text("Sepolia");
       return true;
@@ -143,7 +143,7 @@ var App = {
     $("#totalVotes").text(String(App.candidates.reduce((sum,c)=>sum+c.votes,0)).padStart(2,"0"));
     App.updateVoteReadiness();
   },
-  renderCandidates:  renderCandidates: function() {
+  renderCandidates: function() {
     const grid = $("#candidateGrid");
     const choices = $("#candidateChoices");
     grid.empty(); choices.empty();
@@ -195,7 +195,7 @@ var App = {
     App.status("Local demo vote recorded for " + candidate.name + ". This is not an Ethereum transaction.", "success");
     App.updateVoteReadiness();
   },
-  waitForReceipt:  waitForReceipt: async function(txHash) {
+  waitForReceipt: async function(txHash) {
     for (let i=0;i<90;i++) {
       const receipt = await window.ethereum.request({method:"eth_getTransactionReceipt",params:[txHash]});
       if (receipt) {
