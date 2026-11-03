@@ -134,6 +134,7 @@ contract JanVoteV2 {
         uint256 candidateId
     ) external electionExists(electionId) {
         Election storage e = elections[electionId];
+        require(!e.cancelled, "JanVote: election cancelled");
         require(block.timestamp >= e.startsAt && block.timestamp <= e.endsAt, "JanVote: election not active");
         require(e.registered[msg.sender], "JanVote: voter not approved");
         require(!e.hasVoted[msg.sender], "JanVote: wallet already voted");
